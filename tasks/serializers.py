@@ -1,13 +1,14 @@
 from rest_framework import serializers
 from .models import Task
 
+
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ['id', 'title', 'description', 'completed', 'created_at']
-        read_only_fields = ['created_at']
+        fields = ["id", "title", "description", "completed", "created_at"]
+        read_only_fields = ["created_at"]
         extra_kwargs = {
-            'title': {'help_text': 'Tytuł zadania'},
-            'description': {'help_text': 'Opcjonalny opis'},
-            'completed': {'help_text': 'Czy zadanie zostało ukończone'},
+            "title": {"help_text": "Tytuł zadania"},
+            "description": {"help_text": "Opcjonalny opis"},
+            "completed": {"help_text": "Czy zadanie zostało ukończone"},
         }
