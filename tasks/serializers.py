@@ -6,3 +6,8 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = ['id', 'title', 'description', 'completed', 'created_at']
         read_only_fields = ['created_at']
+        extra_kwargs = {
+            'title': {'help_text': 'Tytuł zadania'},
+            'description': {'help_text': 'Opcjonalny opis'},
+            'completed': {'help_text': 'Czy zadanie zostało ukończone'},
+        }
