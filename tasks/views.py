@@ -14,8 +14,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter,
     ]
 
-    filterset_fields = ["completed"]
-    ordering_fields = ["created_at", "title"]
+    filterset_fields = ["completed", "priority", "deadline"]
+    ordering_fields = ["created_at", "title", "priority", "deadline"]
     search_fields = ["title", "description"]
 
     def get_queryset(self):
