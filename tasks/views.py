@@ -3,6 +3,8 @@ from rest_framework import viewsets, permissions, filters
 from .models import Task, Tag
 from .serializers import TaskSerializer, TagSerializer
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -34,3 +36,8 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+@login_required
+def tasks_list(request):
+    tasks = Task.objects.filter(user=request.user).order_by("-created_at")
+    return render(request, 'tasks_list.html', {'tasks': tasks})

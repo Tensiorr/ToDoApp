@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moje zadania</title>
+</head>
+<body>
+    <h1>Twoje zadania</h1>
+    <p><a href="{% url 'logout' %}">Wyloguj</a></p>
+
+    {% if tasks %}
+        <ul>
+            {% for task in tasks %}
+                <li>
+                    <strong>{{ task.title }}</strong> –
+                    {{ task.status }} | deadline: {{ task.deadline }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nie masz jeszcze żadnych zadań.</p>
+    {% endif %}
+</body>
+</html>
