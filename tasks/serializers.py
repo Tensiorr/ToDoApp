@@ -36,33 +36,29 @@ class TaskSerializer(serializers.ModelSerializer):
             "priority": {"help_text": "Priorytet zadania"},
         }
 
-        def get_tag_list(self, obj):
-            return [tag.name for tag in obj.tags.all()]
+    def get_tag_list(self, obj):
+        return [tag.name for tag in obj.tags.all()]
 
-        def create(self, validated_data):
-            tags_data = validated_data.pop("tags", [])
-            task = Task.objects.create(
-                **validated_data, user=self.context["request"].user
-            )
+    def create(self, validated_data):
+        tags_data = validated_data.pop("tags", [])
+        task = Task.objects.create(**validated_data, user=self.context["request"].user)
 
+        for tag_name in tags_data:
+            tag, _ = Tag.objects.get_or_create(name=tag_name, user=task.user)
+            task.tags.add(tag)
+
+        return task
+
+    def update(self, instance, validated_data):
+        tags_data = validated_data.pop("tags", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if tags_data is not None:
+            instance.tags.clear()
             for tag_name in tags_data:
-                tag, _ = Tag.objects.get_or_create(name=tag_name, user=task.user)
-                task.tags.add(tag)
+                tag, _ = Tag.objects.get_or_create(name=tag_name, user=instance.user)
+                instance.tags.add(tag)
 
-            return task
-
-        def update(self, instance, validated_data):
-            tags_data = validated_data.pop("tags", None)
-            for attr, value in validated_data.items():
-                setattr(instance, attr, value)
-
-            if tags_data is not None:
-                instance.tags.clear()
-                for tag_name in tags_data:
-                    tag, _ = Tag.objects.get_or_create(
-                        name=tag_name, user=instance.user
-                    )
-                    instance.tags.add(tag)
-
-            instance.save()
-            return instance
+        instance.save()
+        return instance

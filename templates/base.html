@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>ToDo App</title>
+</head>
+<body>
+    <header>
+        <h1>ToDo App</h1>
+        <nav>
+            <a href="{% url 'tasks_list' %}">Lista zadań</a> |
+            <a href="{% url 'add_task' %}">Dodaj zadanie</a> |
+            <a href="{% url 'logout' %}">Wyloguj</a>
+        </nav>
+        <hr>
+    </header>
+
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

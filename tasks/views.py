@@ -3,8 +3,9 @@ from rest_framework import viewsets, permissions, filters
 from .models import Task, Tag
 from .serializers import TaskSerializer, TagSerializer
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from .forms import TaskForm
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -37,7 +38,40 @@ class TaskViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+
 @login_required
 def tasks_list(request):
     tasks = Task.objects.filter(user=request.user).order_by("-created_at")
-    return render(request, 'tasks_list.html', {'tasks': tasks})
+    return render(request, "tasks_list.html", {"tasks": tasks})
+
+
+@login_required
+def add_task(request):
+    if request.method == "POST":
+        form = TaskForm(request.POST)
+        form.fields["existing_tags"].queryset = Tag.objects.filter(user=request.user)
+
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.user = request.user
+            task.save()
+
+            existing_tags = form.cleaned_data["existing_tags"]
+            for tag in existing_tags:
+                task.tags.add(tag)
+
+            new_tags_str = form.cleaned_data["new_tags"]
+            if new_tags_str:
+                new_tag_names = [
+                    t.strip() for t in new_tags_str.split(",") if t.strip()
+                ]
+                for name in new_tag_names:
+                    tag, _ = Tag.objects.get_or_create(name=name, user=request.user)
+                    task.tags.add(tag)
+
+            return redirect("tasks_list")
+    else:
+        form = TaskForm()
+        form.fields["existing_tags"].queryset = Tag.objects.filter(user=request.user)
+
+    return render(request, "add_task.html", {"form": form})
