@@ -9,14 +9,22 @@ class Task(models.Model):
         ('high', 'Wysoki'),
     ]
 
+    STATUS_CHOICES = [
+        ('todo', 'Do zrobienia'),
+        ('in_progress', 'W trakcie'),
+        ('done', 'Zrobione'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    completed = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='todo')
     created_at = models.DateTimeField(auto_now_add=True)
 
     deadline = models.DateField(null=True, blank=True)
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='low')
+
+
 
 
     def __str__(self):

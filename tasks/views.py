@@ -14,7 +14,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter,
     ]
 
-    filterset_fields = ["completed", "priority", "deadline"]
+    filterset_fields = ["status", "priority", "deadline"]
     ordering_fields = ["created_at", "title", "priority", "deadline"]
     search_fields = ["title", "description"]
 
