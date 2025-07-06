@@ -10,7 +10,10 @@
         <nav>
             <a href="{% url 'tasks_list' %}">Lista zadań</a> |
             <a href="{% url 'add_task' %}">Dodaj zadanie</a> |
-            <a href="{% url 'logout' %}">Wyloguj</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Wyloguj</button>
+            </form>
         </nav>
         <hr>
     </header>

@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Moje zadania</title>
-</head>
-<body>
-    <h1>Twoje zadania</h1>
-    <p><a href="{% url 'logout' %}">Wyloguj</a></p>
-    <a href="{% url 'add_task' %}">+ Dodaj nowe zadanie</a>
-
+{% extends 'base.html' %}
+{% block content %}
     {% if tasks %}
         <ul>
             {% for task in tasks %}
@@ -20,5 +12,4 @@
     {% else %}
         <p>Nie masz jeszcze żadnych zadań.</p>
     {% endif %}
-</body>
-</html>
+{% endblock %}
