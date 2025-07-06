@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import TaskForm
-
+from django.views.decorators.http import require_POST
 
 class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
@@ -112,3 +112,10 @@ def edit_task(request, task_id):
         return redirect("tasks_list")
 
     return render(request, "edit_task.html", {"task": task, "tags": tags})
+
+@login_required
+@require_POST
+def delete_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    task.delete()
+    return redirect("tasks_list")

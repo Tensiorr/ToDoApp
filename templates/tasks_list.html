@@ -7,6 +7,10 @@
                     <strong>{{ task.title }}</strong> –
                     {{ task.status }} | deadline: {{ task.deadline }}
                     <a href="{% url 'edit_task' task.id %}">Edytuj</a>
+                    <form action="{% url 'delete_task' task.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Na pewno usunąć zadanie?');">🗑 Usuń</button>
+                    </form>
                 </li>
             {% endfor %}
         </ul>
