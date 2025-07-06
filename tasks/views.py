@@ -77,28 +77,38 @@ def add_task(request):
     return render(request, "add_task.html", {"form": form})
 
 
+@login_required
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
+    tags = Tag.objects.filter(user=request.user)
 
     if request.method == "POST":
-        form = TaskForm(request.POST, instance=task)
-        if form.is_valid():
-            task = form.save(commit=False)
-            task.save()
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        deadline = request.POST.get("deadline")
+        priority = request.POST.get("priority")
+        status = request.POST.get("status")
+        tag_names = request.POST.getlist("tags")
+        new_tag = request.POST.get("new_tag")
 
-            existing_tags = form.cleaned_data["existing_tags"]
-            task.tags.set(existing_tags)
+        task.title = title
+        task.description = description
+        task.deadline = deadline or None
+        task.priority = priority
+        task.status = status
+        task.save()
 
-            new_tags_str = form.cleaned_data["new_tags"]
-            new_tag_names = [
-                name.strip() for name in new_tags_str.split(",") if name.strip()
-            ]
-            for tag_name in new_tag_names:
-                tag, _ = Tag.objects.get_or_create(name=tag_name, user=request.user)
+        task.tags.clear()
+
+        for tag_name in tag_names:
+            tag = Tag.objects.filter(name=tag_name, user=request.user).first()
+            if tag:
                 task.tags.add(tag)
 
-            return redirect("tasks_list")
-    else:
-        initial = {"existing_tags": task.tags.all(), "new_tags": ""}
-        form = TaskForm(instance=task, initial=initial)
-    return render(request, "tasks/edit_task.html", {"form": form, "task": task})
+        if new_tag:
+            tag, _ = Tag.objects.get_or_create(name=new_tag, user=request.user)
+            task.tags.add(tag)
+
+        return redirect("tasks_list")
+
+    return render(request, "edit_task.html", {"task": task, "tags": tags})

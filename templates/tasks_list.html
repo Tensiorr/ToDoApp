@@ -6,6 +6,7 @@
                 <li>
                     <strong>{{ task.title }}</strong> –
                     {{ task.status }} | deadline: {{ task.deadline }}
+                    <a href="{% url 'edit_task' task.id %}">Edytuj</a>
                 </li>
             {% endfor %}
         </ul>

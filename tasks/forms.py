@@ -25,3 +25,6 @@ class TaskForm(forms.ModelForm):
             "existing_tags",
             "new_tags",
         ]
+        widgets = {
+            "deadline": forms.DateInput(attrs={"type": "date"}),
+        }
