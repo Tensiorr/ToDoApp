@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.core.mail import send_mail
@@ -9,6 +9,10 @@ from .forms import RegisterForm, CustomLoginForm
 from django.contrib import messages
 from django.contrib.auth import login
 
+def home_view(request):
+    if request.user.is_authenticated:
+        return redirect("tasks_list")
+    return render(request, "home.html")
 
 class RegisterView(CreateView):
     model = User
