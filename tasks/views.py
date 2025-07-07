@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import TaskForm
 from django.views.decorators.http import require_POST
 
+
 class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -112,6 +113,7 @@ def edit_task(request, task_id):
         return redirect("tasks_list")
 
     return render(request, "edit_task.html", {"task": task, "tags": tags})
+
 
 @login_required
 @require_POST

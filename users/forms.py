@@ -4,16 +4,17 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 import re
 
+
 class RegisterForm(UserCreationForm):
     username = forms.CharField(
         label="Login:",
         help_text="",
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     email = forms.EmailField(
         required=True,
         label="Email:",
-        widget=forms.EmailInput(attrs={"class": "form-control"})
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
     )
     password1 = forms.CharField(
         label="Hasło:",
@@ -32,13 +33,13 @@ class RegisterForm(UserCreationForm):
         model = User
         fields = ("username", "password1", "password2", "email")
         help_texts = {
-            'username': '',
-            'password1': '',
-            'password2': '',
+            "username": "",
+            "password1": "",
+            "password2": "",
         }
 
     def clean_username(self):
-        username = self.cleaned_data['username']
+        username = self.cleaned_data["username"]
         if len(username) < 6:
             raise ValidationError("Login musi mieć minimum 6 znaków.")
         if not re.match("^[a-zA-Z0-9_]+$", username):
@@ -49,18 +50,17 @@ class RegisterForm(UserCreationForm):
         password = self.cleaned_data.get("password1")
         if len(password) < 6:
             raise ValidationError("Hasło musi mieć minimum 6 znaków.")
-        if not re.search(r'\d', password):
+        if not re.search(r"\d", password):
             raise ValidationError("Hasło musi zawierać co najmniej jedną cyfrę.")
-        if not re.search(r'[a-zA-Z]', password):
+        if not re.search(r"[a-zA-Z]", password):
             raise ValidationError("Hasło musi zawierać litery.")
         return password
 
+
 class CustomLoginForm(AuthenticationForm):
     username = forms.CharField(
-        label="Login:",
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        label="Login:", widget=forms.TextInput(attrs={"class": "form-control"})
     )
     password = forms.CharField(
-        label="Hasło:",
-        widget=forms.PasswordInput(attrs={"class": "form-control"})
+        label="Hasło:", widget=forms.PasswordInput(attrs={"class": "form-control"})
     )
