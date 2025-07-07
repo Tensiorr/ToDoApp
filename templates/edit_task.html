@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-  <h2>Edytuj zadanie</h2>
-  <form method="post">
+<h2>Edytuj zadanie</h2>
+<form method="post">
     {% csrf_token %}
     <label>Tytuł:</label>
     <input type="text" name="title" value="{{ task.title }}" required><br>
@@ -11,16 +11,22 @@
 
     <label>Priorytet:</label>
     <select name="priority">
-      <option value="low" {% if task.priority == "low" %}selected{% endif %}>Niski</option>
-      <option value="medium" {% if task.priority == "medium" %}selected{% endif %}>Średni</option>
-      <option value="high" {% if task.priority == "high" %}selected{% endif %}>Wysoki</option>
+        <option value="low" {% if task.priority==
+        "low" %}selected{% endif %}>Niski</option>
+        <option value="medium" {% if task.priority==
+        "medium" %}selected{% endif %}>Średni</option>
+        <option value="high" {% if task.priority==
+        "high" %}selected{% endif %}>Wysoki</option>
     </select><br>
 
     <label>Status:</label>
     <select name="status">
-      <option value="todo" {% if task.status == "todo" %}selected{% endif %}>Do zrobienia</option>
-      <option value="in_progress" {% if task.status == "in_progress" %}selected{% endif %}>W trakcie</option>
-      <option value="done" {% if task.status == "done" %}selected{% endif %}>Ukończone</option>
+        <option value="todo" {% if task.status==
+        "todo" %}selected{% endif %}>Do zrobienia</option>
+        <option value="in_progress" {% if task.status==
+        "in_progress" %}selected{% endif %}>W trakcie</option>
+        <option value="done" {% if task.status==
+        "done" %}selected{% endif %}>Ukończone</option>
     </select><br>
 
     <label>Deadline:</label>
@@ -28,14 +34,14 @@
 
     <label>Tagi:</label><br>
     {% for tag in tags %}
-      <input type="checkbox" name="tags" value="{{ tag.name }}" {% if tag in task.tags.all %}checked{% endif %}>
-      {{ tag.name }}<br>
+    <input type="checkbox" name="tags" value="{{ tag.name }}" {% if tag in task.tags.all %}checked{% endif %}>
+    {{ tag.name }}<br>
     {% endfor %}
 
     <label>Dodaj nowy tag:</label>
     <input type="text" name="new_tag"><br><br>
 
     <button type="submit">Zapisz</button>
-  </form>
-  <a href="{% url 'tasks_list' %}">← Powrót do listy</a>
+</form>
+<a href="{% url 'tasks_list' %}">← Powrót do listy</a>
 {% endblock %}

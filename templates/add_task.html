@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-  <h2>Dodaj zadanie</h2>
-  <form method="post">
+<h2>Dodaj zadanie</h2>
+<form method="post">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Zapisz</button>
-  </form>
-  <a href="{% url 'tasks_list' %}">← Powrót do listy</a>
+</form>
+<a href="{% url 'tasks_list' %}">← Powrót do listy</a>
 {% endblock %}

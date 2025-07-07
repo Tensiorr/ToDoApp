@@ -1,4 +1,3 @@
-# from django.shortcuts import render
 from rest_framework import viewsets, permissions, filters
 from .models import Task, Tag
 from .serializers import TaskSerializer, TagSerializer
@@ -7,6 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import TaskForm
 from django.views.decorators.http import require_POST
+from datetime import date
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -43,7 +43,8 @@ class TaskViewSet(viewsets.ModelViewSet):
 @login_required
 def tasks_list(request):
     tasks = Task.objects.filter(user=request.user).order_by("-created_at")
-    return render(request, "tasks_list.html", {"tasks": tasks})
+    today = date.today()
+    return render(request, "tasks_list.html", {"tasks": tasks, "today": today})
 
 
 @login_required
@@ -120,4 +121,17 @@ def edit_task(request, task_id):
 def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
     task.delete()
+    return redirect("tasks_list")
+
+
+@login_required
+@require_POST
+def update_task_status(request, task_id):
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    new_status = request.POST.get("status")
+
+    if new_status in ["to_do", "in_progress", "done"]:
+        task.status = new_status
+        task.save()
+
     return redirect("tasks_list")
