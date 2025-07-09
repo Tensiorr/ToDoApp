@@ -9,8 +9,9 @@ from django.views.decorators.http import require_POST
 from datetime import date
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count
 import json
+
 
 class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
@@ -45,7 +46,11 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 @login_required
 def tasks_list(request):
-    tags = Tag.objects.all()
+    tags = (
+        Tag.objects.filter(user=request.user)
+        .annotate(task_count=Count("task"))
+        .filter(task_count__gt=0)
+    )
     selected_tags = request.GET.getlist("tags")
     tasks = Task.objects.filter(user=request.user).order_by("-created_at")
     today = date.today()
@@ -54,19 +59,22 @@ def tasks_list(request):
         for tag_name in selected_tags:
             tasks = tasks.filter(tags__name=tag_name)
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        html = render_to_string('tasks_partial.html', {
-            'tasks': tasks,
-            'today': today
-        })
-        return JsonResponse({'html': html})
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        html = render_to_string("tasks_partial.html", {"tasks": tasks, "today": today})
+        return JsonResponse({"html": html})
 
-    return render(request, 'tasks_list.html', {
-        'tasks': tasks,
-        'tags': tags,
-        'selected_tags': selected_tags,
-        'today': today
-    })
+    return render(
+        request,
+        "tasks_list.html",
+        {"tasks": tasks, "tags": tags, "selected_tags": selected_tags, "today": today},
+    )
+
+
+@login_required
+def delete_tag(request, tag_id):
+    tag = get_object_or_404(Tag, id=tag_id, user=request.user)
+    tag.delete()
+    return redirect("tasks:task_list")
 
 
 @login_required
@@ -122,6 +130,8 @@ def edit_task(request, task_id):
         task.status = status
         task.save()
 
+        old_tags = list(task.tags.all())
+
         task.tags.clear()
 
         for tag_name in tag_names:
@@ -132,6 +142,10 @@ def edit_task(request, task_id):
         if new_tag:
             tag, _ = Tag.objects.get_or_create(name=new_tag, user=request.user)
             task.tags.add(tag)
+
+        for tag in old_tags:
+            if tag.task_set.count() == 0:
+                tag.delete()
 
         return redirect("tasks_list")
 
@@ -152,12 +166,12 @@ def update_task_status(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
     try:
         data = json.loads(request.body)
-        new_status = data.get('status')
+        new_status = data.get("status")
     except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Błędny JSON'})
+        return JsonResponse({"success": False, "error": "Błędny JSON"})
 
-    if new_status in ['to_do', 'in_progress', 'done']:
+    if new_status in ["to_do", "in_progress", "done"]:
         task.status = new_status
         task.save()
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False, 'error': 'Nieprawidłowy status'})
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "error": "Nieprawidłowy status"})

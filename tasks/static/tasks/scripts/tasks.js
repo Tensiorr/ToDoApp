@@ -103,3 +103,11 @@ document.addEventListener('DOMContentLoaded', function () {
     insertCSRFTokenIntoForms();
     syncTagStyles();
 });
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('button[data-bs-toggle="modal"][data-bs-target="#deleteModal"]');
+    if (!btn) return;
+    const taskId = btn.getAttribute('data-task-id');
+    if (!taskId) return;
+    const form = document.getElementById('deleteForm');
+    form.action = `/tasks/delete/${taskId}/`;
+});

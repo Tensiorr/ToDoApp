@@ -7,7 +7,8 @@ from .views import (
     add_task,
     edit_task,
     delete_task,
-    update_task_status
+    update_task_status,
+    delete_tag,
 )
 
 router = DefaultRouter()
@@ -21,4 +22,5 @@ urlpatterns = [
     path("<int:task_id>/edit/", edit_task, name="edit_task"),
     path("delete/<int:task_id>/", delete_task, name="delete_task"),
     path("status/<int:task_id>/", update_task_status, name="update_task_status"),
+    path("tags/delete/<int:tag_id>/", delete_tag, name="delete_tag"),
 ]
