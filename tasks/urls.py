@@ -7,7 +7,7 @@ from .views import (
     add_task,
     edit_task,
     delete_task,
-    update_task_status,
+    update_task_status
 )
 
 router = DefaultRouter()

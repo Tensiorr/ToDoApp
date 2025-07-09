@@ -1,71 +1,36 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+
 <div class="container mt-5">
+    <form method="get" class="mb-4">
+        <div class="mb-2"><strong>Filtruj po tagach:</strong></div>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+            {% for tag in tags %}
+            <div class="form-check form-check-inline">
+                <input
+                        class="btn-check"
+                        type="checkbox"
+                        name="tags"
+                        value="{{ tag.name }}"
+                        id="tag_{{ tag.id }}"
+                        {% if tag.name in selected_tags %}checked{% endif %}>
+                <label class="btn btn-sm {% if tag.name in selected_tags %}btn-primary{% else %}btn-outline-primary{% endif %}"
+                       for="tag_{{ tag.id }}">
+                    {{ tag.name }}
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+
     <h2 class="mb-4">Twoje zadania</h2>
-    {% if tasks %}
-    <ul class="list-group">
-        {% for task in tasks %}
-        <li class="list-group-item d-flex justify-content-between align-items-center
-          {% if task.status == 'done' %}
-            list-group-item-success
-          {% elif task.status == 'in_progress' and task.deadline and task.deadline < today %}
-            list-group-item-danger
-          {% elif task.status == 'in_progress' %}
-            list-group-item-warning
-          {% elif task.status == 'to_do' and task.deadline and task.deadline < today %}
-            list-group-item-danger
-          {% else %}
-            list-group-item-info
-          {% endif %}"
-        >
-            <div>
-                <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
-                    <h5 class="mb-0 me-2">{{ task.title }}</h5>
-                    {% for tag in task.tags.all %}
-                    <span class="badge bg-light text-dark border small">{{ tag.name }}</span>
-                    {% endfor %}
-                </div>
-                {% if task.description %}
-                <p class="mb-1">{{ task.description }}</p>
-                {% endif %}
-                <form method="post" action="{% url 'update_task_status' task.id %}"
-                      class="d-flex align-items-center gap-1">
-                    {% csrf_token %}
-                    <button name="status" value="to_do"
-                            class="btn btn-sm {% if task.status == 'to_do' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
-                            type="submit">Do zrobienia
-                    </button>
-                    <button name="status" value="in_progress"
-                            class="btn btn-sm {% if task.status == 'in_progress' %}btn-warning{% else %}btn-outline-warning{% endif %}"
-                            type="submit">W trakcie
-                    </button>
-                    <button name="status" value="done"
-                            class="btn btn-sm {% if task.status == 'done' %}btn-success{% else %}btn-outline-success{% endif %}"
-                            type="submit">Ukończone
-                    </button>
-                </form>
-                {% if task.deadline %}
-                <small>Termin: {{ task.deadline }}</small>
-                {% endif %}
-            </div>
-            <div>
-                <a href="{% url 'edit_task' task.id %}" class="btn btn-sm btn-outline-primary me-2">Edytuj</a>
-                <button type="button"
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteModal"
-                        onclick="setDeleteAction({{ task.id }})">
-                    Usuń
-                </button>
-            </div>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>Brak zadań do wyświetlenia.</p>
-    {% endif %}
+    <div id="tasks-container">
+        {% include 'tasks_partial.html' %}
+    </div>
 </div>
+
 <!-- Modal potwierdzenia usunięcia -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -87,15 +52,5 @@
         </div>
     </div>
 </div>
-<script>
-  function setDeleteAction(taskId) {
-    const form = document.getElementById('deleteForm');
-    form.action = `/tasks/delete/${taskId}/`;
-  }
-
-
-
-
-
-</script>
+<script src="{% static 'tasks/scripts/tasks.js' %}"></script>
 {% endblock %}

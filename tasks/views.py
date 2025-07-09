@@ -7,7 +7,10 @@ from django.contrib.auth.decorators import login_required
 from .forms import TaskForm
 from django.views.decorators.http import require_POST
 from datetime import date
-
+from django.template.loader import render_to_string
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
@@ -42,9 +45,28 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 @login_required
 def tasks_list(request):
+    tags = Tag.objects.all()
+    selected_tags = request.GET.getlist("tags")
     tasks = Task.objects.filter(user=request.user).order_by("-created_at")
     today = date.today()
-    return render(request, "tasks_list.html", {"tasks": tasks, "today": today})
+
+    if selected_tags:
+        for tag_name in selected_tags:
+            tasks = tasks.filter(tags__name=tag_name)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render_to_string('tasks_partial.html', {
+            'tasks': tasks,
+            'today': today
+        })
+        return JsonResponse({'html': html})
+
+    return render(request, 'tasks_list.html', {
+        'tasks': tasks,
+        'tags': tags,
+        'selected_tags': selected_tags,
+        'today': today
+    })
 
 
 @login_required
@@ -124,14 +146,18 @@ def delete_task(request, task_id):
     return redirect("tasks_list")
 
 
-@login_required
 @require_POST
+@login_required
 def update_task_status(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
-    new_status = request.POST.get("status")
+    try:
+        data = json.loads(request.body)
+        new_status = data.get('status')
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Błędny JSON'})
 
-    if new_status in ["to_do", "in_progress", "done"]:
+    if new_status in ['to_do', 'in_progress', 'done']:
         task.status = new_status
         task.save()
-
-    return redirect("tasks_list")
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Nieprawidłowy status'})
