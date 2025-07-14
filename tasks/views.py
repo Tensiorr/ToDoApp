@@ -80,76 +80,66 @@ def delete_tag(request, tag_id):
 @login_required
 def add_task(request):
     if request.method == "POST":
-        form = TaskForm(request.POST)
-        form.fields["existing_tags"].queryset = Tag.objects.filter(user=request.user)
-
+        form = TaskForm(request.POST, user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
             task.user = request.user
             task.save()
 
-            existing_tags = form.cleaned_data["existing_tags"]
-            for tag in existing_tags:
-                task.tags.add(tag)
+            existing_tags = form.cleaned_data['existing_tags']
+            task.tags.set(existing_tags)
 
-            new_tags_str = form.cleaned_data["new_tags"]
+            new_tags_str = form.cleaned_data.get('new_tags')
             if new_tags_str:
-                new_tag_names = [
-                    t.strip() for t in new_tags_str.split(",") if t.strip()
-                ]
-                for name in new_tag_names:
-                    tag, _ = Tag.objects.get_or_create(name=name, user=request.user)
-                    task.tags.add(tag)
+                new_tags_list = [t.strip() for t in new_tags_str.split(",") if t.strip()]
+                for tag_name in new_tags_list:
+                    tag_obj, created = Tag.objects.get_or_create(name=tag_name, user=request.user)
+                    task.tags.add(tag_obj)
 
-            return redirect("tasks_list")
+            return redirect('tasks_list')
     else:
-        form = TaskForm()
-        form.fields["existing_tags"].queryset = Tag.objects.filter(user=request.user)
+        form = TaskForm(user=request.user)
 
-    return render(request, "add_task.html", {"form": form})
+    tags = Tag.objects.filter(user=request.user)
+    return render(request, "add_task.html", {
+        "form": form,
+        "tags": tags,
+        "is_edit": False,
+    })
 
 
 @login_required
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
-    tags = Tag.objects.filter(user=request.user)
-
     if request.method == "POST":
-        title = request.POST.get("title")
-        description = request.POST.get("description")
-        deadline = request.POST.get("deadline")
-        priority = request.POST.get("priority")
-        status = request.POST.get("status")
-        tag_names = request.POST.getlist("tags")
-        new_tag = request.POST.get("new_tag")
+        form = TaskForm(request.POST, instance=task, user=request.user)
+        if form.is_valid():
+            updated_task = form.save(commit=False)
+            updated_task.user = request.user
+            updated_task.save()
 
-        task.title = title
-        task.description = description
-        task.deadline = deadline or None
-        task.priority = priority
-        task.status = status
-        task.save()
+            existing_tags = form.cleaned_data['existing_tags']
+            updated_task.tags.set(existing_tags)
 
-        old_tags = list(task.tags.all())
+            new_tags_str = form.cleaned_data.get('new_tags')
+            if new_tags_str:
+                new_tags_list = [t.strip() for t in new_tags_str.split(",") if t.strip()]
+                for tag_name in new_tags_list:
+                    tag_obj, created = Tag.objects.get_or_create(name=tag_name, user=request.user)
+                    updated_task.tags.add(tag_obj)
 
-        task.tags.clear()
+            return redirect('tasks_list')
+    else:
+        form = TaskForm(instance=task, user=request.user)
+        form.fields['existing_tags'].initial = task.tags.all()
 
-        for tag_name in tag_names:
-            tag = Tag.objects.filter(name=tag_name, user=request.user).first()
-            if tag:
-                task.tags.add(tag)
-
-        if new_tag:
-            tag, _ = Tag.objects.get_or_create(name=new_tag, user=request.user)
-            task.tags.add(tag)
-
-        for tag in old_tags:
-            if tag.task_set.count() == 0:
-                tag.delete()
-
-        return redirect("tasks_list")
-
-    return render(request, "edit_task.html", {"task": task, "tags": tags})
+    tags = Tag.objects.filter(user=request.user)
+    return render(request, "edit_task.html", {
+        "form": form,
+        "tags": tags,
+        "task": task,
+        "is_edit": True,
+    })
 
 
 @login_required

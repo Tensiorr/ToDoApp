@@ -28,3 +28,9 @@ class TaskForm(forms.ModelForm):
         widgets = {
             "deadline": forms.DateInput(attrs={"type": "date"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['existing_tags'].queryset = Tag.objects.filter(user=user)

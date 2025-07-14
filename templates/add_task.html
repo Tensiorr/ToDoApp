@@ -1,10 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Dodaj zadanie</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Zapisz</button>
-</form>
-<a href="{% url 'tasks_list' %}">← Powrót do listy</a>
+<div class="container mt-5">
+    <h2 class="mb-4">Dodaj zadanie</h2>
+    {% include "partials/form_task.html" %}
+</div>
 {% endblock %}
